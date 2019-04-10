@@ -19,22 +19,17 @@
 
 variable "ami_id" {
   description = "The ID of the AMI to run in the cluster. This should be an AMI built from the Packer template under examples/couchbase-ami/couchbase.json. Leave blank to use one of the example AMIs we have published publicly."
-  default     = "ami-93ff89f2"
+  default     = ""
 }
 
 variable "cluster_name" {
   description = "What to name the Couchbase cluster and all of its associated resources"
-  default     = "couchbase"
-}
-
-variable "instance_type" {
-  description = "Size of VM"
-  default     = "m4.xlarge"
+  default     = "couchbase-server"
 }
 
 variable "ssh_key_name" {
   description = "The name of an EC2 Key Pair that can be used to SSH to the EC2 Instances in this cluster. Set to an empty string to not associate a Key Pair."
-  default     = "vlm-api-key"
+  default     = ""
 }
 
 variable "data_volume_device_name" {

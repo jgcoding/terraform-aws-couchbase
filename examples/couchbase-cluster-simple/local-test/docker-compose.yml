@@ -40,7 +40,7 @@ services:
       USER_DATA_ENV_sync_gateway_interface: :4984
       USER_DATA_ENV_sync_gateway_admin_interface: 127.0.0.1:4985
       USER_DATA_ENV_mock_aws_region: us-east-1
-      USER_DATA_ENV_mock_availability_zone: us-east-1a
+      USER_DATA_ENV_mock_availability_zone: us-gov-west-1a
       USER_DATA_ENV_data_volume_device_name: /dev/xvdf
       USER_DATA_ENV_data_volume_mount_point: /couchbase-data
       USER_DATA_ENV_index_volume_device_name: /dev/xvdg

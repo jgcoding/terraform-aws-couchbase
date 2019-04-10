@@ -37,14 +37,26 @@ When the build finishes, it will output the IDs of the new AMIs. To see how to d
 examples.
 
 
+#!!!!!!!!!! NOTES
+# ensure the profile is set to the correct credentials from your named profiles:
+export AWS_PROFILE="us-gov-east-profile"
 
+packer build -only=amazon-linux-ami -var edition=enterprise couchbase.json
 
+!!!!!found -> ami-6b157f0a
+
+aws ec2 modify-image-attribute --image-id ami-12345678 --launch-permission "Add=[{UserId=123456789012}]"
+
+aws ec2 modify-image-attribute --image-id ami-99271dfc --launch-permission "Add=[{UserId=808722478764}]"
 
 ## Creating your own Packer template for production usage
 
 When creating your own Packer template for production usage, you can copy the example in this folder more or less 
 exactly, except for one change: we recommend replacing the `file` provisioner with a call to `git clone` in a `shell` 
 provisioner. Instead of:
+
+
+
 
 ```json
 {
