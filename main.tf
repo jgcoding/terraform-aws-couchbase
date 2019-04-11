@@ -28,10 +28,10 @@ module "couchbase" {
   max_size      = 3
   instance_type = "${var.instance_type}"
 
-  ami_id    = "${var.aws_ami.id}"
+  ami_id    = "${var.aws_ami}"
   user_data = "${data.template_file.user_data_server.rendered}"
 
-  vpc_id     = "${var.aws_vpc.id}"
+  vpc_id     = "${var.aws_vpc}"
   subnet_ids = "${data.aws_subnet_ids.default.ids}"
 
   # We recommend using two EBS Volumes with your Couchbase servers: one for the data directory and one for the index

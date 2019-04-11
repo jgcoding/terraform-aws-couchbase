@@ -23,7 +23,7 @@ variable "aws_ami" {
 }
 
 resource "aws_vpc" {
-  id = "vpc-bc5693d8"
+  default = "vpc-bc5693d8"
 }
 
 variable "cluster_name" {
