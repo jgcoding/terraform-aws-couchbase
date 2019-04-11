@@ -17,9 +17,13 @@
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "ami_id" {
+variable "aws_ami" {
   description = "The ID of the AMI to run in the cluster. This should be an AMI built from the Packer template under examples/couchbase-ami/couchbase.json. Leave blank to use one of the example AMIs we have published publicly."
-  default     = "ami-93ff89f2"
+  default     = "ami-a01160c1"
+}
+
+resource "aws_vpc" {
+  id = "vpc-bc5693d8"
 }
 
 variable "cluster_name" {
