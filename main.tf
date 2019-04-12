@@ -28,10 +28,10 @@ module "couchbase" {
   max_size      = 3
   instance_type = "${var.instance_type}"
 
-  ami_id    = "${var.aws_ami}"
+  ami_id    = "${var.ami_id}"
   user_data = "${data.template_file.user_data_server.rendered}"
 
-  vpc_id     = "${var.aws_vpc}"
+  vpc_id     = "${var.vpc_id}"
   subnet_ids = "${data.aws_subnet_ids.default.ids}"
 
   # We recommend using two EBS Volumes with your Couchbase servers: one for the data directory and one for the index
@@ -116,7 +116,7 @@ module "load_balancer" {
   source = "./modules/load-balancer"
 
   name       = "${var.cluster_name}"
-  aws_vpc     = "${var.aws_vpc}"
+  vpc_id     = "${var.vpc_id}"
   subnet_ids = "${data.aws_subnet_ids.default.ids}"
 
   http_listener_ports            = ["${var.couchbase_load_balancer_port}", "${var.sync_gateway_load_balancer_port}"]
@@ -147,7 +147,7 @@ module "couchbase_target_group" {
   asg_name          = "${module.couchbase.asg_name}"
   port              = "${module.couchbase_security_group_rules.rest_port}"
   health_check_path = "/ui/index.html"
-  aws_vpc            = "${var.aws_vpc}"
+  vpc_id            = "${var.vpc_id}"
 
   listener_arns                   = ["${lookup(module.load_balancer.http_listener_arns, var.couchbase_load_balancer_port)}"]
   num_listener_arns               = 1
@@ -168,7 +168,7 @@ module "sync_gateway_target_group" {
   asg_name          = "${module.couchbase.asg_name}"
   port              = "${module.sync_gateway_security_group_rules.interface_port}"
   health_check_path = "/"
-  aws_vpc            = "${var.aws_vpc}"
+  vpc_id            = "${var.vpc_id}"
 
   listener_arns                   = ["${lookup(module.load_balancer.http_listener_arns, var.sync_gateway_load_balancer_port)}"]
   num_listener_arns               = 1
@@ -233,10 +233,10 @@ module "iam_policies" {
 # subnets.
 # ---------------------------------------------------------------------------------------------------------------------
 
-data "aws_vpc" "default" {
+data "vpc_id" "default" {
   default = true
 }
 
 data "aws_subnet_ids" "default" {
-  aws_vpc = "${var.aws_vpc}"
+  vpc_id = "${var.vpc_id}"
 }
