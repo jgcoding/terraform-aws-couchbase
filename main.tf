@@ -116,7 +116,7 @@ module "load_balancer" {
   source = "./modules/load-balancer"
 
   name       = "${var.cluster_name}"
-  aws_vpc.id     = "${var.aws_vpc.id}"
+  aws_vpc     = "${var.aws_vpc}"
   subnet_ids = "${data.aws_subnet_ids.default.ids}"
 
   http_listener_ports            = ["${var.couchbase_load_balancer_port}", "${var.sync_gateway_load_balancer_port}"]
@@ -147,7 +147,7 @@ module "couchbase_target_group" {
   asg_name          = "${module.couchbase.asg_name}"
   port              = "${module.couchbase_security_group_rules.rest_port}"
   health_check_path = "/ui/index.html"
-  aws_vpc.id            = "${var.aws_vpc.id}"
+  aws_vpc            = "${var.aws_vpc}"
 
   listener_arns                   = ["${lookup(module.load_balancer.http_listener_arns, var.couchbase_load_balancer_port)}"]
   num_listener_arns               = 1
@@ -168,7 +168,7 @@ module "sync_gateway_target_group" {
   asg_name          = "${module.couchbase.asg_name}"
   port              = "${module.sync_gateway_security_group_rules.interface_port}"
   health_check_path = "/"
-  aws_vpc.id            = "${var.aws_vpc.id}"
+  aws_vpc            = "${var.aws_vpc}"
 
   listener_arns                   = ["${lookup(module.load_balancer.http_listener_arns, var.sync_gateway_load_balancer_port)}"]
   num_listener_arns               = 1
@@ -238,5 +238,5 @@ data "aws_vpc" "default" {
 }
 
 data "aws_subnet_ids" "default" {
-  aws_vpc.id = "${var.aws_vpc.id}"
+  aws_vpc = "${var.aws_vpc}"
 }
