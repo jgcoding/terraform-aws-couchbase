@@ -19,11 +19,7 @@
 
 variable "ami_id" {
   description = "The ID of the AMI to run in the cluster. This should be an AMI built from the Packer template under examples/couchbase-ami/couchbase.json. Leave blank to use one of the example AMIs we have published publicly."
-  default     = "ami-a01160c1"
-}
-
-variable "vpc_id" {
-  default = "vpc-bc5693d8"
+  default     = "ami-93ff89f2"
 }
 
 variable "cluster_name" {

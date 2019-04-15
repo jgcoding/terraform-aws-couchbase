@@ -31,7 +31,7 @@ module "couchbase" {
   ami_id    = "${var.ami_id}"
   user_data = "${data.template_file.user_data_server.rendered}"
 
-  vpc_id     = "${var.vpc_id}"
+  vpc_id     = "${data.aws_vpc.default.id}"
   subnet_ids = "${data.aws_subnet_ids.default.ids}"
 
   # We recommend using two EBS Volumes with your Couchbase servers: one for the data directory and one for the index
@@ -116,7 +116,7 @@ module "load_balancer" {
   source = "./modules/load-balancer"
 
   name       = "${var.cluster_name}"
-  vpc_id     = "${var.vpc_id}"
+  vpc_id     = "${data.aws_vpc.default.id}"
   subnet_ids = "${data.aws_subnet_ids.default.ids}"
 
   http_listener_ports            = ["${var.couchbase_load_balancer_port}", "${var.sync_gateway_load_balancer_port}"]
@@ -147,7 +147,7 @@ module "couchbase_target_group" {
   asg_name          = "${module.couchbase.asg_name}"
   port              = "${module.couchbase_security_group_rules.rest_port}"
   health_check_path = "/ui/index.html"
-  vpc_id            = "${var.vpc_id}"
+  vpc_id            = "${data.aws_vpc.default.id}"
 
   listener_arns                   = ["${lookup(module.load_balancer.http_listener_arns, var.couchbase_load_balancer_port)}"]
   num_listener_arns               = 1
@@ -164,11 +164,11 @@ module "sync_gateway_target_group" {
   # source = "git::git@github.com:gruntwork-io/terraform-aws-couchbase.git//modules/load-balancer-target-group?ref=v0.0.1"
   source = "./modules/load-balancer-target-group"
 
-  target_group_name = "${var.cluster_name}-sg"
+  target_group_name = "${var.cluster_name}-tg"
   asg_name          = "${module.couchbase.asg_name}"
   port              = "${module.sync_gateway_security_group_rules.interface_port}"
   health_check_path = "/"
-  vpc_id            = "${var.vpc_id}"
+  vpc_id            = "${data.aws_vpc.default.id}"
 
   listener_arns                   = ["${lookup(module.load_balancer.http_listener_arns, var.sync_gateway_load_balancer_port)}"]
   num_listener_arns               = 1
@@ -233,10 +233,10 @@ module "iam_policies" {
 # subnets.
 # ---------------------------------------------------------------------------------------------------------------------
 
-data "vpc_id" "default" {
+data "aws_vpc" "default" {
   default = true
 }
 
 data "aws_subnet_ids" "default" {
-  vpc_id = "${var.vpc_id}"
+  vpc_id = "${data.aws_vpc.default.id}"
 }
