@@ -1,7 +1,12 @@
 # Instructions for building a Couchbase Enterprise Server 6.0.1 custom amaxon linux 
 
-# be sure to utilize the customized "couchbase-no-sync.json"
-# and "install-couchbase-server-no-sync"
+# for now, navigate to the examples/couchbase-ami directory off the root of the repo..
+MacBook-Pro:terraform-aws-couchbase Mac$ cd examples/couchbase-ami
+
+# !!!!!!!  be sure to utilize the customized "couchbase-no-sync.json"
+# !!!!!!!  and "install-couchbase-server-no-sync"
+
+# !!!!!!! update "aws_region" to the desired region 
 
 # verify "DEFAULT_COUCHBASE_ENTERPRISE_SHA256_CHECKSUM_AMAZON_LINUX" = "49c39ec85d96e50ed09dc94f575d7b1c9b5bc9442610abbaf141ae53e0a9fa8b"
 
@@ -14,7 +19,6 @@ MacBook-Pro:terraform-aws-couchbase Mac$ subl ~/.aws/credentials
 MacBook-Pro:terraform-aws-couchbase Mac$ export AWS_PROFILE="gwiz-profile"
 
 # run the packer build command from the root containing the customized "couchbase-no-sync.json"
-MacBook-Pro:terraform-aws-couchbase Mac$ cd examples/couchbase-ami
 
 # be sure to reference the correct packeter build configuration "couchbase-no-sync.json
 MacBook-Pro:couchbase-ami Mac$ packer build -only=amazon-linux-ami -var edition=enterprise couchbase-no-sync.json

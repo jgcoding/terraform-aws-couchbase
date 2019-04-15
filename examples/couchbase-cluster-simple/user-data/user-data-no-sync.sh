@@ -87,33 +87,9 @@ function create_test_resources {
     "--bucket-ramsize=100"
 }
 
-function run_sync_gateway {
-  local readonly cluster_asg_name="$1"
-  local readonly cluster_port="$2"
-  local readonly sync_gateway_interface="$3"
-  local readonly sync_gateway_admin_interface="$4"
-  local readonly bucket="$5"
-  local readonly username="$6"
-  local readonly password="$7"
-
-  echo "Starting Sync Gateway"
-
-  /opt/couchbase-sync-gateway/bin/run-sync-gateway \
-    --auto-fill-asg "<SERVERS>=$cluster_asg_name:$cluster_port" \
-    --auto-fill "<INTERFACE>=$sync_gateway_interface" \
-    --auto-fill "<ADMIN_INTERFACE>=$sync_gateway_admin_interface" \
-    --auto-fill "<DB_NAME>=$cluster_asg_name" \
-    --auto-fill "<BUCKET_NAME>=$bucket" \
-    --auto-fill "<DB_USERNAME>=$username" \
-    --auto-fill "<DB_PASSWORD>=$password" \
-    --use-public-hostname
-}
-
 function run {
   local readonly cluster_asg_name="$1"
   local readonly cluster_port="$2"
-  local readonly sync_gateway_interface="$3"
-  local readonly sync_gateway_admin_interface="$4"
   local readonly data_volume_device_name="$5"
   local readonly data_volume_mount_point="$6"
   local readonly index_volume_device_name="$7"
@@ -141,15 +117,12 @@ function run {
     create_test_resources "$cluster_username" "$cluster_password" "$cluster_port" "$test_user_name" "$test_user_password" "$test_bucket_name"
   fi
 
-  run_sync_gateway "$cluster_asg_name" "$cluster_port" "$sync_gateway_interface" "$sync_gateway_admin_interface" "$test_bucket_name" "$test_user_name" "$test_user_password"
 }
 
 # The variables below are filled in via Terraform interpolation
 run \
   "${cluster_asg_name}" \
   "${cluster_port}" \
-  "${sync_gateway_interface}" \
-  "${sync_gateway_admin_interface}" \
   "${data_volume_device_name}" \
   "${data_volume_mount_point}" \
   "${index_volume_device_name}" \
