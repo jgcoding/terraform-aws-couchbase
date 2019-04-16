@@ -6,7 +6,7 @@
     "base_ami_name": "couchbase",
     "vpc_id": "vpc-bc5693d8",
     "subnet_id": "subnet-aa038cdc",
-    "vpc_public_sg_id": "sg-6ded520a" 
+    "vpc_public_sg_id": "sg-6ded520a"
   },
   "builders": [{
     "name": "ubuntu-ami",
