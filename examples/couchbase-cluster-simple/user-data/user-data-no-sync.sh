@@ -99,11 +99,11 @@ function run {
   # To keep this example simple, we are hard-coding all credentials in this file in plain text. You should NOT do this
   # in production usage!!! Instead, you should use tools such as Vault, Keywhiz, or KMS to fetch the credentials at
   # runtime and only ever have the plaintext version in memory.
-  local readonly cluster_username="store_admin"
-  local readonly cluster_password="4y8xs#7Cnk"
-  local readonly test_user_name="store_tester"
-  local readonly test_user_password="b3xf&cHNQH"
-  local readonly test_bucket_name="test-bucket"
+  local readonly cluster_username="$9"
+  local readonly cluster_password="$10"
+  local readonly test_user_name="$11"
+  local readonly test_user_password="$12"
+  local readonly test_bucket_name="$13"
 
   mount_volumes "$data_volume_device_name" "$data_volume_mount_point" "$index_volume_device_name" "$index_volume_mount_point" "$volume_owner"
   run_couchbase "$cluster_asg_name" "$cluster_username" "$cluster_password" "$cluster_port" "$data_volume_mount_point" "$index_volume_mount_point"

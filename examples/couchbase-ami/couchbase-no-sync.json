@@ -3,7 +3,10 @@
   "variables": {
     "aws_region": "us-east-1",
     "edition": "enterprise",
-    "base_ami_name": "couchbase"
+    "base_ami_name": "couchbase",
+    "vpc_id": "vpc-bc5693d8",
+    "subnet_id": "subnet-aa038cdc",
+    "vpc_public_sg_id": "sg-6ded520a" 
   },
   "builders": [{
     "name": "ubuntu-ami",
@@ -30,6 +33,9 @@
     "ami_description": "An Amazon Linux 2 AMI that has Couchbase installed.",
     "instance_type": "m4.xlarge",
     "region": "{{user `aws_region`}}",
+    "vpc_id": "{{user `vpc_id`}}",
+    "subnet_id": "{{user `subnet_id`}}",
+    "security_group_id": "{{user `vpc_public_sg_id`}}",
     "type": "amazon-ebs",
     "source_ami_filter": {
       "filters": {

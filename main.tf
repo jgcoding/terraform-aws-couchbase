@@ -1,8 +1,8 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A COUCHBASE CLUSTER IN AWS
-# This is an example of how to deploy Couchbase in AWS with all of the Couchbase services and Sync Gateway in a single
+# This is an example of how to deploy Couchbase in AWS with all of the Couchbase services in a single
 # cluster. The cluster runs on top of an Auto Scaling Group (ASG), with EBS Volumes attached, and a load balancer
-# used for health checks and to distribute traffic across Sync Gateway.
+# used for health checks.
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
@@ -16,6 +16,37 @@ provider "aws" {
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY THE COUCHBASE CLUSTER
 # ---------------------------------------------------------------------------------------------------------------------
+
+data_volume_device_name="$1"
+data_volume_mount_point="$2"
+index_volume_device_name="$3"
+index_volume_mount_point="$4"
+
+volume_owner="$5"
+cluster_asg_name="$1"
+cluster_username="$2"
+cluster_password="$3"
+cluster_port="$4"
+data_dir="$5"
+index_dir="$6"
+cluster_username="$1"
+cluster_password="$2"
+cluster_port="$3"
+user_name="$4"
+user_password="$5"
+bucket_name="$6"
+cluster_asg_name="$1"
+cluster_port="$2"
+data_volume_device_name="$5"
+data_volume_mount_point="$6"
+index_volume_device_name="$7"
+index_volume_mount_point="$8"
+volume_owner="$9"
+cluster_username="store_admin"
+cluster_password="4y8xs#7Cnk"
+test_user_name="store_tester"
+test_user_password="b3xf&cHNQH"
+test_bucket_name="test-bucket"
 
 module "couchbase" {
   # When using these modules in your own code, you will need to use a Git URL with a ref attribute that pins you
@@ -77,21 +108,15 @@ module "couchbase" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # THE USER DATA SCRIPT THAT WILL RUN ON EACH EC2 INSTANCE WHEN IT'S BOOTING
-# This script will configure and start Couchbase and Sync Gateway
+# This script will configure and start Couchbase
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "template_file" "user_data_server" {
-  template = "${file("${path.module}/examples/couchbase-cluster-simple/user-data/user-data.sh")}"
+  template = "${file("${path.module}/examples/couchbase-cluster-simple/user-data/user-data-no-sync.sh")}"
 
   vars {
     cluster_asg_name = "${var.cluster_name}"
     cluster_port     = "${module.couchbase_security_group_rules.rest_port}"
-
-    # We expose the Sync Gateway on all IPs but the Sync Gateway Admin should ONLY be accessible from localhost, as it
-    # provides admin access to ALL Sync Gateway data.
-
-    sync_gateway_interface       = ":${module.sync_gateway_security_group_rules.interface_port}"
-    sync_gateway_admin_interface = "127.0.0.1:${module.sync_gateway_security_group_rules.admin_interface_port}"
 
     # Pass in the data about the EBS volumes so they can be mounted
 
@@ -100,6 +125,12 @@ data "template_file" "user_data_server" {
     index_volume_device_name = "${var.index_volume_device_name}"
     index_volume_mount_point = "${var.index_volume_mount_point}"
     volume_owner             = "${var.volume_owner}"
+    cluster_username  = "${var.cluster_username}"
+    cluster_password  = "${var.cluster_password}"
+    test_user_name  = "${var.test_user_name}"
+    test_user_password  = "${var.test_user_password}"
+    test_bucket_name  = "${var.test_bucket_name}"
+
   }
 }
 
@@ -119,7 +150,7 @@ module "load_balancer" {
   vpc_id     = "${data.aws_vpc.default.id}"
   subnet_ids = "${data.aws_subnet_ids.default.ids}"
 
-  http_listener_ports            = ["${var.couchbase_load_balancer_port}", "${var.sync_gateway_load_balancer_port}"]
+  http_listener_ports            = ["${var.couchbase_load_balancer_port}"]
   https_listener_ports_and_certs = []
 
   # To make testing easier, we allow inbound connections from any IP. In production usage, you may want to only allow
@@ -158,25 +189,8 @@ module "couchbase_target_group" {
   enable_stickiness = true
 }
 
-module "sync_gateway_target_group" {
-  # When using these modules in your own code, you will need to use a Git URL with a ref attribute that pins you
-  # to a specific version of the modules, such as the following example:
-  # source = "git::git@github.com:gruntwork-io/terraform-aws-couchbase.git//modules/load-balancer-target-group?ref=v0.0.1"
-  source = "./modules/load-balancer-target-group"
-
-  target_group_name = "${var.cluster_name}-tg"
-  asg_name          = "${module.couchbase.asg_name}"
-  port              = "${module.sync_gateway_security_group_rules.interface_port}"
-  health_check_path = "/"
-  vpc_id            = "${data.aws_vpc.default.id}"
-
-  listener_arns                   = ["${lookup(module.load_balancer.http_listener_arns, var.sync_gateway_load_balancer_port)}"]
-  num_listener_arns               = 1
-  listener_rule_starting_priority = 100
-}
-
 # ---------------------------------------------------------------------------------------------------------------------
-# CONFIGURE THE SECURITY GROUP RULES FOR COUCHBASE AND SYNC GATEWAY
+# CONFIGURE THE SECURITY GROUP RULES FOR COUCHBASE
 # This controls which ports are exposed and who can connect to them
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -197,19 +211,6 @@ module "couchbase_security_group_rules" {
   fts_port_cidr_blocks       = ["0.0.0.0/0"]
   memcached_port_cidr_blocks = ["0.0.0.0/0"]
   moxi_port_cidr_blocks      = ["0.0.0.0/0"]
-}
-
-module "sync_gateway_security_group_rules" {
-  # When using these modules in your own code, you will need to use a Git URL with a ref attribute that pins you
-  # to a specific version of the modules, such as the following example:
-  # source = "git::git@github.com:gruntwork-io/terraform-aws-couchbase.git//modules/sync-gateway-security-group-rules?ref=v0.0.1"
-  source = "./modules/sync-gateway-security-group-rules"
-
-  security_group_id = "${module.couchbase.security_group_id}"
-
-  # To keep this example simple, we allow these interface port to be accessed from any IP. In a production
-  # deployment, you may want to lock this down just to trusted servers.
-  interface_port_cidr_blocks = ["0.0.0.0/0"]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

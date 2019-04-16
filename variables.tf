@@ -22,6 +22,11 @@ variable "ami_id" {
   default     = "ami-93ff89f2"
 }
 
+variable "target_vpc" {
+  description = "VPC for the couchbase cluster"
+  default     = "couchbase"  
+}
+
 variable "cluster_name" {
   description = "What to name the Couchbase cluster and all of its associated resources"
   default     = "couchbase"
@@ -67,7 +72,69 @@ variable "couchbase_load_balancer_port" {
   default     = 8091
 }
 
-variable "sync_gateway_load_balancer_port" {
-  description = "The port the load balancer should listen on for Sync Gateway requests."
-  default     = 4984
+variable "cluster_username {
+  description = "The cluster username"
+  default = "store_admin"
+}
+
+variable "cluster_password {
+  description = "The cluster password"
+  default = "4y8xs#7Cnk"
+}
+
+variable "test_user_name {
+  description = "The test user name"
+  default = "store_tester"
+}
+
+variable "test_user_password {
+  description = "The test user password"
+  default = "b3xf&cHNQH"
+}
+
+variable "test_bucket_name {
+  description = "The test bucket name"
+  default = "test-bucket"
+}
+
+
+
+variable "app_server_count" {}
+variable "app_server_ip_start" {}
+
+# Discover VPC
+data "aws_vpc" "target_vpc" {
+  filter = {
+    name = "tag:Name"
+    values = ["${var.target_vpc}"]
+  }
+}
+
+# Discover subnet IDs. This requires the subnetworks to be tagged with Tier = "AppTier"
+data "aws_subnet_ids" "app_tier_ids" {
+  vpc_id = "${data.aws_vpc.target_vpc.id}"
+  tags {
+    Tier = "AppTier"
+  }
+}
+
+# Discover subnets and create a list, one for each found ID
+data "aws_subnet" "app_tier" {
+  count = "${length(data.aws_subnet_ids.app_tier_ids.ids)}"
+  id = "${data.aws_subnet_ids.app_tier_ids.ids[count.index]}"
+}
+
+resource "aws_instance" "app_server" {
+  ...
+
+  # Create N instances
+  count = "${var.app_server_count}"
+
+  # Use the "count.index" subnet
+  subnet_id = "${data.aws_subnet_ids.app_tier_ids.ids[count.index]}"
+
+  # Create an IP address using the CIDR of the subnet
+  private_ip = "${cidrhost(element(data.aws_subnet.app_tier.*.cidr_block, count.index), var.app_server_ip_start + count.index)}"
+
+  ...
 }
